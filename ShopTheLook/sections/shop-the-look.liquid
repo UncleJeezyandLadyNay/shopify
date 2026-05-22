@@ -1,0 +1,171 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 2 | round }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 2 | round }}px;
+    }
+  }
+  .stl-grid-{{ section.id }} {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+  @media screen and (max-width: 989px) {
+    .stl-grid-{{ section.id }} { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media screen and (max-width: 499px) {
+    .stl-grid-{{ section.id }} { grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+  }
+  .stl-grid-{{ section.id }} .stl-look-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--media-radius, 8px);
+    text-decoration: none;
+    color: inherit;
+    aspect-ratio: 3 / 4;
+    background: rgba(var(--color-foreground), .06);
+  }
+  .stl-grid-{{ section.id }} .stl-look-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .45s ease;
+  }
+  .stl-grid-{{ section.id }} .stl-look-card:hover img { transform: scale(1.06); }
+  .stl-grid-{{ section.id }} .stl-look-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 55%);
+    transition: background .3s;
+  }
+  .stl-grid-{{ section.id }} .stl-look-card:hover .stl-look-card__overlay {
+    background: linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.1) 55%);
+  }
+  .stl-grid-{{ section.id }} .stl-look-card__label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.6rem 1.4rem 1.4rem;
+    color: #fff;
+    text-align: center;
+  }
+  .stl-grid-{{ section.id }} .stl-look-card__title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin: 0 0 .6rem;
+    line-height: 1.2;
+  }
+  .stl-grid-{{ section.id }} .stl-look-card__cta {
+    display: inline-block;
+    font-size: 1.1rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,.7);
+    padding-bottom: .1rem;
+    opacity: .9;
+    transition: opacity .2s;
+  }
+  .stl-grid-{{ section.id }} .stl-look-card:hover .stl-look-card__cta { opacity: 1; }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+  <div class="page-width">
+
+    {%- if section.settings.heading != blank -%}
+      <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin">
+        <h2 class="title inline-richtext {{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
+      </div>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="stl-grid-{{ section.id }}">
+        {%- for block in section.blocks -%}
+          <a
+            class="stl-look-card"
+            href="{{ block.settings.look_url | default: '#' }}"
+            {{ block.shopify_attributes }}
+            aria-label="Shop the {{ block.settings.look_title | default: 'Look' | escape }} look"
+          >
+            {%- if block.settings.look_image != blank -%}
+              {{ block.settings.look_image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '300,450,600', alt: block.settings.look_title | default: 'Shop the Look' }}
+            {%- else -%}
+              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              </div>
+            {%- endif -%}
+            <div class="stl-look-card__overlay"></div>
+            <div class="stl-look-card__label">
+              {%- if block.settings.look_title != blank -%}
+                <p class="stl-look-card__title">{{ block.settings.look_title }}</p>
+              {%- endif -%}
+              <span class="stl-look-card__cta">Shop Now</span>
+            </div>
+          </a>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      {%- if request.design_mode -%}
+        <div style="padding:4rem;text-align:center;border:2px dashed rgba(var(--color-foreground),.15);border-radius:8px;">
+          <p>Add up to 4 &ldquo;Look&rdquo; blocks in the theme editor, each linking to a look page.</p>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Shop the Look",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    { "type": "text", "id": "heading", "default": "Shop the Look", "label": "Heading" },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1"
+    },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Top padding", "default": 36 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Bottom padding", "default": 36 }
+  ],
+  "blocks": [
+    {
+      "type": "look",
+      "name": "Look Card",
+      "settings": [
+        { "type": "image_picker", "id": "look_image", "label": "Look image" },
+        { "type": "text", "id": "look_title", "label": "Look title", "placeholder": "e.g. Summer Southern Belle" },
+        { "type": "url", "id": "look_url", "label": "Link to look page" }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [{
+    "name": "Shop the Look",
+    "blocks": [
+      { "type": "look" },
+      { "type": "look" },
+      { "type": "look" },
+      { "type": "look" }
+    ]
+  }]
+}
+{% endschema %}

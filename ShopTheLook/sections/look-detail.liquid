@@ -1,0 +1,374 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 2 | round }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 2 | round }}px;
+    }
+  }
+  .ld-{{ section.id }} .ld-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+  @media screen and (max-width: 749px) {
+    .ld-{{ section.id }} .ld-layout { grid-template-columns: 1fr; gap: 2rem; }
+  }
+  .ld-{{ section.id }} .ld-products {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.6rem;
+  }
+  .ld-{{ section.id }} .ld-card {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    transition: box-shadow .2s;
+  }
+  .ld-{{ section.id }} .ld-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.14); }
+  .ld-{{ section.id }} .ld-card img { transition: transform .35s; }
+  .ld-{{ section.id }} .ld-card:hover img { transform: scale(1.04); }
+  .ld-{{ section.id }} .ld-card__info {
+    padding: 1.2rem;
+    text-align: center;
+    background: #3b2f2f;
+  }
+  .ld-{{ section.id }} .ld-card__info a,
+  .ld-{{ section.id }} .ld-card__info p,
+  .ld-{{ section.id }} .ld-card__info span {
+    color: #f5f0eb !important;
+  }
+{%- endstyle -%}
+
+{%- assign look_image = page.metafields.look.look_image.value -%}
+{%- assign look_title = page.metafields.look.look_title.value | default: page.title -%}
+{%- assign look_products = page.metafields.look.products.value -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+  <div class="page-width ld-{{ section.id }}">
+
+    {%- if section.settings.show_heading -%}
+      <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin">
+        <h1 class="title inline-richtext {{ section.settings.heading_size }}">{{ section.settings.heading | default: page.title }}</h1>
+      </div>
+    {%- endif -%}
+
+    <div class="ld-layout">
+      <div class="ld-look__img-col">
+        {%- if look_image != blank -%}
+          <div style="border-radius:8px;overflow:hidden;">
+            {{ look_image | image_url: width: 900 | image_tag: loading: 'eager', widths: '450,600,800,900', style: 'width:100%;display:block;', alt: look_title }}
+          </div>
+        {%- else -%}
+          <div style="border-radius:8px;overflow:hidden;background:#f4f4f4;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;">
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          </div>
+        {%- endif -%}
+        {%- if look_title != blank -%}
+          <p style="text-align:center;font-weight:600;margin:1.2rem 0 0;font-size:1.5rem;letter-spacing:.1em;text-transform:uppercase;">{{ look_title }}</p>
+        {%- endif -%}
+      </div>
+
+      <div class="ld-products">
+        {%- if look_products != blank -%}
+          {%- for product in look_products -%}
+            <div class="ld-card">
+              <a href="{{ product.url }}" style="display:block;aspect-ratio:3/4;overflow:hidden;background:#f4f4f4;">
+                {%- if product.featured_image != blank -%}
+                  {{ product.featured_image | image_url: width: 500 | image_tag: loading: 'lazy', widths: '250,350,500', alt: product.title, style: 'width:100%;height:100%;object-fit:cover;display:block;' }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+              </a>
+              <div class="ld-card__info">
+                <p style="font-size:1.2rem;margin:0 0 .3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  <a href="{{ product.url }}" style="text-decoration:none;">{{ product.title }}</a>
+                </p>
+                <p style="font-size:1.3rem;font-weight:600;margin:0 0 .9rem;">
+                  {%- if product.compare_at_price > product.price -%}
+                    <s style="opacity:.6;">{{ product.compare_at_price | money }}</s>&nbsp;<span>{{ product.price | money }}</span>
+                  {%- else -%}
+                    {{ product.price | money }}
+                  {%- endif -%}
+                </p>
+                {%- if product.available -%}
+                  <button
+                    type="button"
+                    class="ld-quick-add button button--secondary"
+                    style="width:100%;font-size:1.1rem;padding:.7rem 1rem;"
+                    data-handle="{{ product.handle }}"
+                    data-title="{{ product.title | escape }}"
+                    data-image="{{ product.featured_image | image_url: width: 600 }}"
+                    data-url="{{ product.url }}"
+                    aria-label="Quick add {{ product.title | escape }}"
+                  >+ Quick Add</button>
+                {%- else -%}
+                  <span style="font-size:1.1rem;opacity:.55;">Sold Out</span>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endfor -%}
+        {%- else -%}
+          {%- if request.design_mode -%}
+            <div style="grid-column:1/-1;padding:3rem;text-align:center;border:2px dashed rgba(0,0,0,.15);border-radius:8px;">
+              <p>Go to <strong>Admin → Pages</strong>, open this page, and fill in the <strong>Look Image</strong> and <strong>Look Products</strong> metafields.</p>
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ld-modal-{{ section.id }}" class="ld-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ld-modal-heading-{{ section.id }}">
+  <div class="ld-modal__overlay"></div>
+  <div class="ld-modal__box">
+    <button class="ld-modal__close" aria-label="Close dialog">&#x2715;</button>
+    <div class="ld-modal__body">
+      <div class="ld-modal__img-wrap">
+        <img id="ld-modal-img-{{ section.id }}" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">
+      </div>
+      <div class="ld-modal__details">
+        <h2 id="ld-modal-heading-{{ section.id }}" class="ld-modal__title"></h2>
+        <div id="ld-modal-price-{{ section.id }}" class="ld-modal__price"></div>
+        <div id="ld-modal-opts-{{ section.id }}" class="ld-modal__opts"></div>
+        <p id="ld-modal-err-{{ section.id }}" class="ld-modal__err" style="display:none;"></p>
+        <button id="ld-modal-add-{{ section.id }}" class="ld-modal__add-btn button" disabled>Add to Cart</button>
+        <a id="ld-modal-link-{{ section.id }}" href="#" class="ld-modal__view-link">View full details &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.ld-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s;}
+.ld-modal[aria-hidden="false"]{opacity:1;visibility:visible;}
+.ld-modal__overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);cursor:pointer;}
+.ld-modal__box{position:relative;background:#ffffff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:min(600px,92vw);max-height:88vh;overflow-y:auto;z-index:1;transform:translateY(20px);transition:transform .25s;}
+.ld-modal[aria-hidden="false"] .ld-modal__box{transform:translateY(0);}
+.ld-modal__close{position:absolute;top:1.2rem;right:1.2rem;z-index:2;width:3.2rem;height:3.2rem;border-radius:50%;border:1px solid #ddd;background:#fff;color:#333;cursor:pointer;font-size:1.4rem;line-height:1;display:flex;align-items:center;justify-content:center;}
+.ld-modal__close:hover{background:#f5f5f5;}
+.ld-modal__body{display:grid;grid-template-columns:1fr 1fr;}
+@media(max-width:480px){.ld-modal__body{grid-template-columns:1fr;}}
+.ld-modal__img-wrap{aspect-ratio:3/4;overflow:hidden;background:#f4f4f4;border-radius:12px 0 0 12px;}
+@media(max-width:480px){.ld-modal__img-wrap{border-radius:12px 12px 0 0;aspect-ratio:4/3;}}
+.ld-modal__details{padding:2.8rem 2.4rem;display:flex;flex-direction:column;gap:1.4rem;background:#fff;border-radius:0 12px 12px 0;}
+@media(max-width:480px){.ld-modal__details{border-radius:0 0 12px 12px;}}
+.ld-modal__title{margin:0;font-size:1.7rem;line-height:1.3;color:#1a1a1a;padding-right:2rem;}
+.ld-modal__price{font-size:1.6rem;font-weight:700;color:#1a1a1a;}
+.ld-opt-group{display:flex;flex-direction:column;gap:.5rem;}
+.ld-opt-label{font-size:1.1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#444;}
+.ld-opt-btns{display:flex;flex-wrap:wrap;gap:.5rem;}
+.ld-opt-btn{padding:.5rem 1.2rem;border:1.5px solid #ccc;border-radius:4px;background:#fff;color:#333;cursor:pointer;font-size:1.2rem;transition:border-color .15s,background .15s,color .15s;}
+.ld-opt-btn:hover{border-color:#333;}
+.ld-opt-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.ld-modal__add-btn{width:100%;padding:1.2rem;font-size:1.4rem;margin-top:auto;}
+.ld-modal__view-link{display:block;text-align:center;font-size:1.2rem;color:#666;text-decoration:underline;}
+.ld-modal__err{color:#c00;font-size:1.2rem;background:#fff5f5;border:1px solid #fcc;padding:.8rem 1rem;border-radius:4px;margin:0;}
+.ld-modal__loading{font-size:1.3rem;color:#888;text-align:center;padding:1rem 0;}
+</style>
+
+<script>
+(function () {
+  var sid = '{{ section.id }}';
+  var modal  = document.getElementById('ld-modal-' + sid);
+  if (!modal) return;
+  var eImg   = document.getElementById('ld-modal-img-'     + sid);
+  var eTitle = document.getElementById('ld-modal-heading-' + sid);
+  var ePrice = document.getElementById('ld-modal-price-'   + sid);
+  var eOpts  = document.getElementById('ld-modal-opts-'    + sid);
+  var eErr   = document.getElementById('ld-modal-err-'     + sid);
+  var eAdd   = document.getElementById('ld-modal-add-'     + sid);
+  var eLink  = document.getElementById('ld-modal-link-'    + sid);
+  var currentProduct = null;
+  var selOpts = {};
+
+  function money(c) { return '$' + (c / 100).toFixed(2); }
+  function optName(o) { return (o && typeof o === 'object') ? (o.name || '') : String(o); }
+  function openModal()  { modal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+  function closeModal() { modal.setAttribute('aria-hidden', 'true');  document.body.style.overflow = ''; currentProduct = null; selOpts = {}; }
+
+  function matchVariant() {
+    if (!currentProduct) return null;
+    return currentProduct.variants.find(function (v) {
+      return currentProduct.options.every(function (_, i) {
+        return v['option' + (i + 1)] === selOpts['option' + (i + 1)];
+      });
+    }) || null;
+  }
+
+  function renderPrice(v) {
+    if (!v) { ePrice.textContent = ''; return; }
+    ePrice.innerHTML = (v.compare_at_price && v.compare_at_price > v.price)
+      ? '<s style="opacity:.55;font-weight:400">' + money(v.compare_at_price) + '</s>&ensp;' + money(v.price)
+      : money(v.price);
+  }
+
+  function syncAddBtn() {
+    var v = matchVariant();
+    eAdd.disabled = !v || !v.available;
+    eAdd.textContent = !v ? 'Select options' : (v.available ? 'Add to Cart' : 'Sold Out');
+  }
+
+  function renderOptions(product) {
+    eOpts.innerHTML = '';
+    selOpts = {};
+
+    /* ------------------------------------------------------------------
+     * Step 1: pick the default variant — first available, else first.
+     * Pre-fill ALL option slots so matchVariant() works immediately
+     * for EVERY product, including single-variant ones.
+     * ------------------------------------------------------------------ */
+    var defaultVariant = product.variants.find(function (v) { return v.available; })
+                      || product.variants[0];
+
+    product.options.forEach(function (_, i) {
+      selOpts['option' + (i + 1)] = defaultVariant['option' + (i + 1)];
+    });
+
+    /* Single variant — button will be enabled by syncAddBtn(), no UI needed */
+    if (product.variants.length === 1) return;
+
+    /* ------------------------------------------------------------------
+     * Step 2: build option buttons, marking the default variant active
+     * ------------------------------------------------------------------ */
+    product.options.forEach(function (opt, i) {
+      var key         = 'option' + (i + 1);
+      var name        = optName(opt);
+      var activeVal   = selOpts[key];   /* already set from defaultVariant */
+
+      /* Deduplicated values for this option position */
+      var vals = product.variants
+        .map(function (v) { return v[key]; })
+        .filter(function (val, idx, arr) { return arr.indexOf(val) === idx; });
+
+      var group = document.createElement('div');
+      group.className = 'ld-opt-group';
+
+      var label = document.createElement('p');
+      label.className = 'ld-opt-label';
+      label.textContent = name;
+      group.appendChild(label);
+
+      var btnRow = document.createElement('div');
+      btnRow.className = 'ld-opt-btns';
+
+      vals.forEach(function (val) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        /* Mark the default variant's value as active on creation */
+        btn.className = 'ld-opt-btn' + (val === activeVal ? ' active' : '');
+        btn.textContent = val;
+        btn.addEventListener('click', function () {
+          group.querySelectorAll('.ld-opt-btn').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          selOpts[key] = val;
+          renderPrice(matchVariant());
+          syncAddBtn();
+        });
+        btnRow.appendChild(btn);
+      });
+
+      group.appendChild(btnRow);
+      eOpts.appendChild(group);
+    });
+  }
+
+  function loadProduct(handle, title, image, url) {
+    eTitle.textContent = title;
+    eImg.src = image || '';
+    eImg.alt = title;
+    ePrice.textContent = '';
+    eOpts.innerHTML = '<p class="ld-modal__loading">Loading…</p>';
+    eErr.style.display = 'none';
+    eAdd.disabled = true;
+    eAdd.textContent = 'Add to Cart';
+    eLink.href = url || ('/products/' + handle);
+    openModal();
+
+    fetch('/products/' + handle + '.js')
+      .then(function (r) { return r.json(); })
+      .then(function (p) {
+        currentProduct = p;
+        renderOptions(p);       /* sets selOpts for all options */
+        renderPrice(matchVariant()); /* always resolves now */
+        syncAddBtn();           /* button enabled immediately */
+      })
+      .catch(function () {
+        eOpts.innerHTML = '';
+        eErr.textContent = 'Could not load product. Please try again.';
+        eErr.style.display = 'block';
+      });
+  }
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.ld-quick-add');
+    if (btn) { loadProduct(btn.dataset.handle, btn.dataset.title, btn.dataset.image, btn.dataset.url); return; }
+    if (e.target.closest('.ld-modal__overlay') || e.target.closest('.ld-modal__close')) closeModal();
+  });
+
+  eAdd.addEventListener('click', function () {
+    var v = matchVariant();
+    if (!v) return;
+    eAdd.disabled = true;
+    eAdd.textContent = 'Adding…';
+    eErr.style.display = 'none';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ id: v.id, quantity: 1 })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.status >= 400) {
+          eErr.textContent = data.description || 'Could not add to cart.';
+          eErr.style.display = 'block';
+          eAdd.disabled = false;
+          eAdd.textContent = 'Add to Cart';
+        } else {
+          eAdd.textContent = 'Added!';
+          fetch('/cart.js').then(function (r) { return r.json(); }).then(function (cart) {
+            var bubble = document.querySelector('.cart-count-bubble');
+            if (bubble) { var s = bubble.querySelector('span:not(.visually-hidden)'); if (s) s.textContent = cart.item_count; }
+            document.dispatchEvent(new CustomEvent('cart:refresh', { detail: { cart: cart } }));
+          });
+          var drawer = document.querySelector('cart-drawer');
+          if (drawer && typeof drawer.open === 'function') setTimeout(function () { drawer.open(); }, 300);
+          setTimeout(function () { closeModal(); eAdd.textContent = 'Add to Cart'; }, 1400);
+        }
+      })
+      .catch(function () {
+        eErr.textContent = 'Something went wrong. Please try again.';
+        eErr.style.display = 'block';
+        eAdd.disabled = false;
+        eAdd.textContent = 'Add to Cart';
+      });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeModal();
+  });
+}());
+</script>
+
+{% schema %}
+{
+  "name": "Look Detail",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "checkbox", "id": "show_heading", "label": "Show page heading", "default": false },
+    { "type": "text", "id": "heading", "label": "Heading override", "info": "Leave blank to use the page title" },
+    { "type": "select", "id": "heading_size", "label": "Heading size", "options": [{"value":"h2","label":"Small"},{"value":"h1","label":"Medium"},{"value":"h0","label":"Large"}], "default": "h1" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Top padding", "default": 36 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Bottom padding", "default": 36 }
+  ],
+  "presets": [{ "name": "Look Detail" }]
+}
+{% endschema %}
